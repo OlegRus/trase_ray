@@ -16,10 +16,6 @@ impl Color {
     pub fn black() -> Color {
         Color { r: 0, g: 0, b: 0 }
     }
-
-    pub fn is_black(&self) -> bool {
-        self.r == 0 && self.g == 0 && self.b == 0
-    }
 }
 
 impl Mul<f32> for Color {

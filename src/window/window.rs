@@ -10,13 +10,12 @@ use scene::color::Color;
 pub struct Window {
     sdl: Sdl,
     canvas: Canvas<sdl2::video::Window>,
-    buffer: Vec<Vec<Color>>,
     width: u32,
     height: u32,
     min_x: i32,
     max_x: i32,
     min_y: i32,
-    max_y: i32
+    max_y: i32,
 }
 
 impl Window {
@@ -30,15 +29,14 @@ impl Window {
         let mut canvas = window.into_canvas()
             .build()
             .unwrap();
-        let buffer = vec![vec![Color::black(); height as usize]; width as usize];
-        canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0 , 0));
+        canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
         canvas.clear();
         canvas.present();
         let min_x = -(width as i32 / 2);
         let max_x = width as i32 / 2;
         let min_y = -(height as i32 / 2);
         let max_y = height as i32 / 2;
-        Window { sdl, canvas, buffer, width, height, min_x, max_x, min_y, max_y }
+        Window { sdl, canvas, width, height, min_x, max_x, min_y, max_y }
     }
 
     pub fn get_max_x(&self) -> i32 {
@@ -62,24 +60,20 @@ impl Window {
     }
 
     pub fn set_point(&mut self, x: i32, y: i32, color: Color) {
-        let dot = self.to_buffer_cord(Dot::new(x,y));
+        let dot = self.to_buffer_cord(Dot::new(x, y));
         if dot.x < 0 || dot.x >= self.width as i32 {
             return;
         }
         if dot.y < 0 || dot.y >= self.height as i32 {
             return;
         }
-        self.buffer[dot.x as usize][dot.y as usize] = color
+        let x = dot.x;
+        let y = dot.y;
+        self.canvas.set_draw_color(sdl2::pixels::Color::RGB(color.r, color.g, color.b));
+        self.canvas.draw_point(Point::new(x, y)).unwrap();
     }
 
     pub fn present(&mut self) {
-        for x in 0 .. self.width {
-            for y in 0 .. self.height {
-                let color = self.buffer[x as usize][y as usize];
-                self.canvas.set_draw_color(sdl2::pixels::Color::RGB(color.r, color.g, color.b));
-                self.canvas.draw_point(Point::new(x as i32, y as i32)).unwrap();
-            }
-        }
         self.canvas.present();
     }
 

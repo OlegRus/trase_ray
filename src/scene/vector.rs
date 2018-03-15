@@ -15,10 +15,6 @@ impl Vector {
         Vector { x, y, z }
     }
 
-    pub fn null_vec() -> Vector {
-        Vector::new(0., 0., 0.)
-    }
-
     pub fn get_len(self) -> f32 {
         (self * self).sqrt()
     }

@@ -22,14 +22,14 @@ impl Scene {
     }
 
     fn trace_ray(&self, point: Vector, direction: Vector, min: f32, max: f32, depth: i32) -> Color {
-        let (sphere, coeff) = self.calculate_closest_sphere_and_coeff(point, direction, min, max);
-        let mut color = sphere.color;
-        if color.is_black() {
-            return Color::black();
-        }
+        let (space, coeff) = self.calculate_closest_sphere_and_coeff(point, direction, min, max);
+        let sphere = match space {
+            Some(s) => s,
+            None => return Color::black(),
+        };
         let point_on_sphere: Vector = point + direction * coeff;
         let light_coeff = self.calculate_light_coeff(point_on_sphere, &sphere, direction);
-        color = color * light_coeff;;
+        let color = sphere.color * light_coeff;;
         if depth <= 0 || sphere.reflective <= 0. {
             return color;
         }
@@ -38,9 +38,9 @@ impl Scene {
         color * (1. - sphere.reflective) + self.trace_ray(point_on_sphere, reflect_rey, 0.001, max, depth - 1) * sphere.reflective
     }
 
-    fn calculate_closest_sphere_and_coeff(&self, point: Vector, direction: Vector, min: f32, max: f32) -> (Sphere, f32) {
+    fn calculate_closest_sphere_and_coeff(&self, point: Vector, direction: Vector, min: f32, max: f32) -> (Option<Sphere>, f32) {
         let mut closest_coeff = max;
-        let mut selected_sphere = Sphere::zero();
+        let mut selected_sphere = None;
         for sphere in &self.spheres {
             let from_sphere_vec = point - sphere.center;
             let rr = sphere.radius * sphere.radius;
@@ -59,7 +59,7 @@ impl Scene {
                 false => x1,
             };
             if coeff < closest_coeff && coeff > min {
-                selected_sphere = *sphere;
+                selected_sphere = Some(*sphere);
                 closest_coeff = coeff;
             }
         }
@@ -91,7 +91,6 @@ impl Scene {
         if light_coeff > 1. {
             light_coeff = 1.;
         }
-//        println!("coeff: {:?}", light_coeff);
         light_coeff
     }
 
@@ -153,10 +152,6 @@ pub struct Sphere {
 impl Sphere {
     pub fn new(center: Vector, radius: f32, color: Color, specular: f32, reflective: f32) -> Sphere {
         Sphere { center, radius, color, specular, reflective }
-    }
-
-    pub fn zero() -> Sphere {
-        Sphere::new(Vector::null_vec(), 0., Color::black(), 0., 0.)
     }
 
     pub fn get_normal(&self, point: Vector) -> Vector {

@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate time;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -36,12 +37,18 @@ fn main() {
 
     let scene = Scene::new(viewport, spheres, lights);
     let mut window = Window::new(width, height);
+
+    let start = time::get_time();
+
     for x in window.get_min_x()..window.get_max_x() + 1 {
         for y in window.get_min_y()..window.get_max_y() + 1 {
             window.set_point(x, y, scene.get_color_for_window_cords(x, y));
         }
     }
+
     window.present();
+    println!("{}", (time::get_time() - start));
+
     let mut events = window.get_events();
     'lock: loop {
         for event in events.poll_iter() {
